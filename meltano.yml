@@ -1,0 +1,40 @@
+version: 1
+default_environment: dev
+project_id: 4f8465ad-64d8-4f55-aada-7d225613ae06
+
+environments:
+  - name: dev
+  - name: hom
+  - name: prod
+
+plugins:
+  extractors:
+    - name: tap-csv
+      variant: meltanolabs
+      pip_url: meltanolabs-tap-csv
+      config:
+        files:
+          - entity: agencias
+            path: data-src/banvic_data2026/agencias.csv
+          - entity: clientes
+            path: data-src/banvic_data2026/clientes.csv
+          - entity: colaborador_agencia
+            path: data-src/banvic_data2026/colaborador_agencia.csv
+          - entity: colaboradores
+            path: data-src/banvic_data2026/colaboradores.csv
+          - entity: contas
+            path: data-src/banvic_data2026/contas.csv
+          - entity: propostas_credito
+            path: data-src/banvic_data2026/propostas_credito.csv
+          - entity: transacoes
+            path: data-src/banvic_data2026/transacoes.csv
+  loaders:
+    - name: target-postgres
+      variant: meltanolabs
+      pip_url: meltanolabs-target-postgres
+      config:
+        host: ${TARGET_POSTGRES_HOST}
+        port: ${TARGET_POSTGRES_PORT}
+        user: ${TARGET_POSTGRES_USER}
+        password: ${TARGET_POSTGRES_PASSWORD}
+        database: ${TARGET_POSTGRES_DATABASE}

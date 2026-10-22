@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-airflow.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  airflow:
+    image: banvic-elt:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      PYTHONPATH: /opt/elt
+      TARGET_POSTGRES_HOST: postgres
+      TARGET_POSTGRES_PORT: "5432"
+      TARGET_POSTGRES_USER: ${POSTGRES_USER}
+      TARGET_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TARGET_POSTGRES_DATABASE: ${POSTGRES_DB}
+    ports:
+      - "127.0.0.1:${AIRFLOW_PORT:-8080}:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./app:/opt/elt/app:ro
+      - ./data-src:/opt/elt/data-src:ro
+      - ${SOURCE_DIR:-./incoming}:/data/incoming
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: standalone
+
+  meltano:
+    image: banvic-elt:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    profiles: [tools]
+    env_file: .env
+    environment:
+      TARGET_POSTGRES_HOST: postgres
+      TARGET_POSTGRES_PORT: "5432"
+      TARGET_POSTGRES_USER: ${POSTGRES_USER}
+      TARGET_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TARGET_POSTGRES_DATABASE: ${POSTGRES_DB}
+    volumes:
+      - ./data-src:/opt/elt/data-src:ro
+      - ${SOURCE_DIR:-./incoming}:/data/incoming
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["meltano", "--help"]
+
+volumes:
+  postgres-data:

@@ -1,0 +1,14 @@
+.env
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfstate.d/
+infra/kubernetes/generated/
+__pycache__/
+*.py[cod]
+.meltano/
+incoming/
+logs/
+plugins/
+target/

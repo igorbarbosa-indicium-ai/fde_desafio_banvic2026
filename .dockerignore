@@ -1,0 +1,11 @@
+.env
+.git
+.terraform
+data-src
+incoming
+logs
+plugins
+tests
+infra
+__pycache__
+*.py[cod]

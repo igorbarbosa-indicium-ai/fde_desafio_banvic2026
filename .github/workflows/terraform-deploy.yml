@@ -1,0 +1,31 @@
+name: Terraform deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, hom, prod]
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: [self-hosted, rancher-desktop]
+    environment: ${{ inputs.environment }}
+    concurrency: terraform-${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - name: Initialize Terraform
+        run: terraform -chdir=infra/terraform init
+      - name: Apply environment
+        run: >-
+          terraform -chdir=infra/terraform apply
+          -var-file="environments/${{ inputs.environment }}.tfvars"
+          -auto-approve

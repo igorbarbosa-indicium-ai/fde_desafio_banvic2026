@@ -1,0 +1,2 @@
+# Runtime Python dependencies are installed in docker/airflow/Dockerfile.
+# The ZIP extraction utility and its unit tests use only the Python standard library.
