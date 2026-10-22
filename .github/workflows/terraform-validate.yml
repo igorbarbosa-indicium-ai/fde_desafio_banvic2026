@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "infra/terraform/**"
+      - "infra/kubernetes/**"
       - ".github/workflows/terraform-validate.yml"
   push:
     branches: [main]
     paths:
       - "infra/terraform/**"
+      - "infra/kubernetes/**"
       - ".github/workflows/terraform-validate.yml"
   workflow_dispatch:
 

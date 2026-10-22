@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   apply:
-    runs-on: [self-hosted, rancher-desktop]
+    runs-on: [self-hosted, windows, docker-desktop, kind]
     environment: ${{ inputs.environment }}
     concurrency: terraform-${{ inputs.environment }}
     steps:

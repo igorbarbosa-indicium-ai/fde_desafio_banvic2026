@@ -1,5 +1,7 @@
-# Rancher
+# Docker Desktop e Kind
 
-O Compose é a configuração-base dos serviços de desenvolvimento. Use Kompose para gerar os manifests e revise-os antes de aplicar no Rancher, conforme o procedimento do README raiz.
+O cluster local é criado pelo arquivo `kind-config.yaml` com um nó control-plane e a pasta local `incoming/` montada no nó em `/mnt/banvic-incoming`. Substitua `__INCOMING_PATH__` pelo caminho absoluto local ao gerar o arquivo de configuração usado por `kind create cluster`. Crie essa pasta antes do cluster. O contexto Kubernetes é `kind-banvic`.
 
-Esta pasta não armazena manifests gerados nem credenciais. Gere-os em `generated/` localmente, valide secrets, volumes, `imagePullPolicy` e persistência do PostgreSQL, e só então aplique no namespace criado pelo Terraform.
+O Terraform cria um Deployment Airflow com duas réplicas e um Service `LoadBalancer` em cada namespace. Kind não fornece um balanceador externo por padrão: mantenha Cloud Provider Kind em execução para atribuir um `EXTERNAL-IP`. Em Linux, acesse o serviço pelo endereço IP externo e porta 8080. O nó control-plane também precisa ter removido o label `node.kubernetes.io/exclude-from-external-load-balancers`. Antes do apply, carregue a imagem local no cluster e crie no namespace de destino o Secret `banvic-airflow-runtime`, contendo a configuração do Airflow e a conexão com um PostgreSQL externo compartilhado.
+
+Não versione Secrets nem credenciais. SQLite não é apropriado para duas réplicas Airflow; `airflow standalone` continua sendo um modo de desenvolvimento, não uma arquitetura de produção. O volume de entrada usa `hostPath` e, portanto, os dados permanecem no diretório local `incoming/`.
